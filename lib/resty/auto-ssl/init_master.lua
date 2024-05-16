@@ -15,6 +15,7 @@ local function check_dependencies()
     "openssl",
     "sed",
     "getent",
+    "hexdump",
   }
   for _, bin in ipairs(runtime_dependencies) do
     local _, err = shell_blocking.capture_combined({ "command", "-v", bin })
@@ -174,6 +175,54 @@ local function generate_config_zerossl(auto_ssl_instance)
   end
 end
 
+local function generate_config_google(auto_ssl_instance)
+  local base_dir = auto_ssl_instance:get("dir")
+
+  local _, mkdir_err = shell_blocking.capture_combined({ "mkdir", "-p", base_dir .. "/google/conf.d" }, { umask = "0022" })
+  if mkdir_err then
+    ngx.log(ngx.ERR, "auto-ssl: failed to create google/conf.d dir: ", mkdir_err)
+  end
+
+  local _, chmod_err = shell_blocking.capture_combined({ "chmod", "777", base_dir .. "/google" })
+  if chmod_err then
+    ngx.log(ngx.ERR, "auto-ssl: failed to create google dir permissions: ", chmod_err)
+  end
+
+  local file, err = io.open(base_dir .. "/google/config", "w")
+  if err then
+    ngx.log(ngx.ERR, "auto-ssl: failed to open google config file")
+  else
+    file:write('# This file will be overwritten by resty-auto-ssl.\n')
+    file:write('# Place any customizations in ' .. base_dir .. '/google/conf.d/*.sh\n\n')
+    file:write('CONFIG_D="' .. base_dir .. '/google/conf.d"\n')
+    file:write('LOCKFILE="' .. base_dir .. '/google/locks/lock"\n')
+    file:write('WELLKNOWN="' .. base_dir .. '/google/.acme-challenges"\n')
+
+    local ca = auto_ssl_instance:get("google_ca")
+    if ca then
+      file:write('CA="' .. ca .. '"\n')
+    end
+    file:close()
+  end
+
+  local _, mkdir_challenges_err = shell_blocking.capture_combined({ "mkdir", "-p", base_dir .. "/google/.acme-challenges" }, { umask = "0022" })
+  if mkdir_challenges_err then
+    ngx.log(ngx.ERR, "auto-ssl: failed to create google/.acme-challenges dir: ", mkdir_challenges_err)
+  end
+  local _, chown_challenges_err = shell_blocking.capture_combined({ "chown", nobody_group, base_dir .. "/google/.acme-challenges" })
+  if chown_challenges_err then
+    ngx.log(ngx.ERR, "auto-ssl: failed to chown google/.acme-challenges dir: ", chown_challenges_err)
+  end
+  local _, mkdir_locks_err = shell_blocking.capture_combined({ "mkdir", "-p", base_dir .. "/google/locks" }, { umask = "0022" })
+  if mkdir_locks_err then
+    ngx.log(ngx.ERR, "auto-ssl: failed to create google/locks dir: ", mkdir_locks_err)
+  end
+  local _, chown_locks_err = shell_blocking.capture_combined({ "chown", nobody_group, base_dir .. "/google/locks" })
+  if chown_locks_err then
+    ngx.log(ngx.ERR, "auto-ssl: failed to chown google/locks dir: ", chown_locks_err)
+  end
+end
+
 local function generate_config(auto_ssl_instance)
   local base_dir = auto_ssl_instance:get("dir")
 
@@ -187,8 +236,8 @@ local function generate_config(auto_ssl_instance)
     ngx.log(ngx.ERR, "auto-ssl: failed to create tmp dir permissions: ", tmp_chmod_err)
   end
 
-  if not auto_ssl_instance:get("letsencrypt_ca") and not auto_ssl_instance:get("zerossl_ca") then
-    ngx.log(ngx.ERR, "auto-ssl: zerossl_ca and letsencrypt_ca parameters are missing!")
+  if not auto_ssl_instance:get("letsencrypt_ca") and not auto_ssl_instance:get("zerossl_ca") and not auto_ssl_instance:get("google_ca") then
+    ngx.log(ngx.ERR, "auto-ssl: zerossl_ca and google_ca and letsencrypt_ca parameters are missing!")
   end
 
   if auto_ssl_instance:get("letsencrypt_ca") then
@@ -197,6 +246,10 @@ local function generate_config(auto_ssl_instance)
 
   if auto_ssl_instance:get("zerossl_ca") then
     generate_config_zerossl(auto_ssl_instance)
+  end
+
+  if auto_ssl_instance:get("google_ca") then
+    generate_config_google(auto_ssl_instance)
   end
 
 

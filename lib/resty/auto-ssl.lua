@@ -45,6 +45,10 @@ function _M.new(options)
     options["letsencrypt_ca"] = "https://acme-v02.api.letsencrypt.org/directory"
   end
 
+  if not options["google_ca"] then
+    options["google_ca"] = "https://dv.acme-v02.api.pki.goog/directory"
+  end
+
   if not options["letsencrypt_multi_account"] then
     options["letsencrypt_multi_account"] = false
   end
