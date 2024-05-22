@@ -104,6 +104,8 @@ local function issue_cert(auto_ssl_instance, storage, domain)
     cert, err = ssl_provider.issue_cert(auto_ssl_instance, domain)
     if err then
       ngx.log(ngx.ERR, "auto-ssl: issuing new certificate failed: " .. ssl_provider_name .. " ", err)
+    else
+      break
     end
   end
   issue_cert_unlock(domain, storage, local_lock, distributed_lock_value)

@@ -45,6 +45,7 @@ install: check-dependencies
 	install -d $(INST_LUADIR)/resty/auto-ssl/ssl_providers
 	install -m 644 lib/resty/auto-ssl/ssl_providers/lets_encrypt.lua $(INST_LUADIR)/resty/auto-ssl/ssl_providers/lets_encrypt.lua
 	install -m 644 lib/resty/auto-ssl/ssl_providers/zero_ssl.lua $(INST_LUADIR)/resty/auto-ssl/ssl_providers/zero_ssl.lua
+	install -m 644 lib/resty/auto-ssl/ssl_providers/google.lua $(INST_LUADIR)/resty/auto-ssl/ssl_providers/google.lua
 	install -m 644 lib/resty/auto-ssl/storage.lua $(INST_LUADIR)/resty/auto-ssl/storage.lua
 	install -d $(INST_LUADIR)/resty/auto-ssl/storage_adapters
 	install -m 644 lib/resty/auto-ssl/storage_adapters/file.lua $(INST_LUADIR)/resty/auto-ssl/storage_adapters/file.lua
@@ -61,6 +62,7 @@ install: check-dependencies
 	install -d $(INST_BINDIR)/resty-auto-ssl
 	install -m 755 bin/letsencrypt_hooks $(INST_BINDIR)/resty-auto-ssl/letsencrypt_hooks
 	install -m 755 bin/zerossl_hooks $(INST_BINDIR)/resty-auto-ssl/zerossl_hooks
+	install -m 755 bin/google_hooks $(INST_BINDIR)/resty-auto-ssl/google_hooks
 	install -m 755 bin/start_sockproc $(INST_BINDIR)/resty-auto-ssl/start_sockproc
 	install -m 755 $(BUILD_DIR)/bin/dehydrated $(INST_BINDIR)/resty-auto-ssl/dehydrated
 	install -m 755 $(BUILD_DIR)/bin/sockproc $(INST_BINDIR)/resty-auto-ssl/sockproc
