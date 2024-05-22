@@ -61,6 +61,18 @@ function _M.new(options)
     options["provider_order"] = {"letsencrypt"}
   end
 
+  if not options["phase_out_providers"] then
+    options["phase_out_providers"] = {}
+  end
+
+  if not options["renew_certs"] then
+    options["renew_certs"] = true
+  end
+
+  if not options["renewal_delay"] then
+    options["renewal_delay"] = 0
+  end
+
   if not options["ssl_provider"] then
     options["ssl_provider"] = {["letsencrypt"]="resty.auto-ssl.ssl_providers.lets_encrypt"}
   end
