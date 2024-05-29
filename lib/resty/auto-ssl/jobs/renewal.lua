@@ -83,7 +83,7 @@ end
 
 local function issue_cert(auto_ssl_instance, storage, domain, ssl_provider)
   local _, issue_err
-  if dns_check(auto_ssl_instance, domain) then
+  if dns_check(auto_ssl_instance, ssl_provider, domain) then
     local renewal_delay = auto_ssl:get("renewal_delay")
     if renewal_delay > 0 then
       ngx.log(ngx.NOTICE, "waiting ", renewal_delay, " before renewing another domain ", domain , " ", ssl_provider)

@@ -101,11 +101,14 @@ local function issue_cert(auto_ssl_instance, storage, domain)
     local ssl_provider = require(ssl_providers[ssl_provider_name])
     ngx.log(ngx.INFO, "auto-ssl: issuing new certificate for ", ssl_provider_name .. ", ", domain)
     local err
-    cert, err = ssl_provider.issue_cert(auto_ssl_instance, domain)
-    if err then
-      ngx.log(ngx.ERR, "auto-ssl: issuing new certificate failed: " .. ssl_provider_name .. " ", err)
-    else
-      break
+    if dns_check(auto_ssl_instance, ssl_provider_name, domain) then
+      cert, err = ssl_provider.issue_cert(auto_ssl_instance, domain)
+      if err then
+        ngx.log(ngx.ERR, "auto-ssl: issuing new certificate failed: " .. ssl_provider_name .. " ", err)
+      else
+        ngx.log(ngx.INFO, "successfully issued_cert: ", ssl_provider_name, " ", domain)
+        break
+      end
     end
   end
   issue_cert_unlock(domain, storage, local_lock, distributed_lock_value)
@@ -167,10 +170,6 @@ local function get_cert_der(auto_ssl_instance, domain, ssl_options)
 
   -- Finally, issue a new certificate if one hasn't been found yet.
   if not ssl_options or ssl_options["generate_certs"] ~= false then
-    if not dns_check(auto_ssl_instance, domain) then
-      return nil, "dns check failed"
-    end
-
     local cert = issue_cert(auto_ssl_instance, storage, domain)
     if cert and cert["fullchain_pem"] and cert["privkey_pem"] then
       local cert_der = convert_to_der_and_cache(domain, cert)

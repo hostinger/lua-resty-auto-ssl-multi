@@ -77,6 +77,10 @@ function _M.new(options)
     options["ssl_provider"] = {["letsencrypt"]="resty.auto-ssl.ssl_providers.lets_encrypt"}
   end
 
+  if not options["ssl_provider_caa_records"] then
+    options["ssl_provider_caa_records"] = {["letsencrypt"]="letsencrypt.org", ["zerossl"]="sectigo.com", ["google"]="pki.goog"}
+  end
+
   if not options["storage_format_update"] then
     options["storage_format_update"] = true
   end
