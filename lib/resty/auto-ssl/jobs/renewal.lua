@@ -48,8 +48,9 @@ end
 
 local function delete_cert_if_expired(domain, storage, cert, ssl_provider)
   -- Give up on renewing this certificate if we didn't manage to renew
-  -- it before the expiration date
-  if cert["expiry"] and cert["expiry"] < ngx.now() then
+  -- it before the expiration date.
+  -- Deleting it sooner because another cert may take over.
+  if cert["expiry"] and cert["expiry"] < ngx.now() + 24 * 60 * 60  then
     ngx.log(ngx.WARN, "auto-ssl: existing certificate is expired, deleting: ", ssl_provider, " " , domain)
     storage:delete_cert(domain, ssl_provider)
   end
@@ -62,7 +63,10 @@ local function get_expiring_providers(auto_ssl_instance, storage, domain)
   for ssl_provider,_ in pairs(auto_ssl:get("ssl_provider")) do
     local cert, get_cert_err = storage:get_cert(domain, ssl_provider)
     if cert ~= nil and cert["expiry"] then
-      if now + (30 * 24 * 60 * 60) > cert["expiry"] then
+      if now + (24 * 60 * 60) > cert["expiry"] then
+        storage:delete_cert(domain, ssl_provider)
+        ngx.log(ngx.WARN, "deleting almost expired cert ", ssl_provider, " " , domain)
+      elseif now + (30 * 24 * 60 * 60) > cert["expiry"] then
         table.insert(expiring_providers, ssl_provider)
       end
     end
