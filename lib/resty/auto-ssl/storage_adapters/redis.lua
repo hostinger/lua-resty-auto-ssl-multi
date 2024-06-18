@@ -85,14 +85,16 @@ function _M.set(self, key, value, options)
   end
 
   key = prefixed_key(self, key)
-  local ok, err = connection:set(key, value)
-  if ok then
-    if options and options["exptime"] then
-      local _, expire_err = connection:expire(key, options["exptime"])
-      if expire_err then
-        ngx.log(ngx.ERR, "auto-ssl: failed to set expire: ", expire_err)
-      end
-    end
+
+  local ok, err
+  if options and options["exptime"] then
+    ok, err = connection:set(key, value, "EX", options["exptime"])
+  else
+    ok, err = connection:set(key, value)
+  end
+
+  if not ok then
+    ngx.log(ngx.ERR, "auto-ssl: failed redis set command: ", err)
   end
 
   return ok, err
