@@ -23,7 +23,7 @@ jobs:
           - openresty1.13
           - lua51
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Build Container
         run: docker-compose build ${{ matrix.variant }}
       - name: Lint
