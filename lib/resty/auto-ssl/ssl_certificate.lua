@@ -236,6 +236,11 @@ local function get_ocsp_response(fullchain_der, auto_ssl_instance)
 end
 
 local function set_ocsp_stapling(domain, cert_der, auto_ssl_instance)
+  -- Skip OCSP stapling if disabled
+  if not auto_ssl_instance:get("ocsp_stapling_enabled") then
+    return true
+  end
+
   -- Fetch the OCSP stapling response from the cache, or make the request to
   -- fetch it.
   local ocsp_resp = ngx.shared.auto_ssl:get("domain:ocsp:" .. domain)

@@ -97,6 +97,10 @@ function _M.new(options)
     options["ocsp_stapling_error_level"] = ngx.ERR
   end
 
+  if not options["ocsp_stapling_enabled"] then
+    options["ocsp_stapling_enabled"] = true
+  end
+
   if not options["renew_check_interval"] then
     options["renew_check_interval"] = 86400 -- 1 day
   end
